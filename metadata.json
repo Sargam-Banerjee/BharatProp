@@ -1,0 +1,7 @@
+{
+  "name": "BharatProp - India House Price Predictor",
+  "description": "A real-time house price prediction and market analysis tool for India, powered by Gemini with Google Search grounding.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
