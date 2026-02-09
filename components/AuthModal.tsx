@@ -9,7 +9,7 @@ import { UserProfile } from '../types';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (method: string) => void;
+  onLogin: (identifier: string) => void;
   onOpenProfile?: () => void;
   isLoggedIn: boolean;
   userProfile: UserProfile | null;
@@ -42,7 +42,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin, onOpenP
     if (selectedMode === 'google') {
       setIsLoading(true);
       setTimeout(() => {
-        onLogin('Google');
+        onLogin('google_user@gmail.com');
         setIsLoading(false);
         setStep('success-overview');
       }, 1500);
@@ -66,7 +66,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin, onOpenP
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      onLogin(mode === 'email' ? 'Email-OTP' : 'Phone-OTP');
+      onLogin(inputValue);
       setStep('success-overview');
     }, 1500);
   };
@@ -124,7 +124,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin, onOpenP
                       <Mail size={18} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Email</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Email / ID</p>
                       <p className="text-sm font-black text-slate-900">{userProfile.email}</p>
                     </div>
                   </div>
@@ -138,7 +138,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin, onOpenP
                     </div>
                     <div>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Identity</p>
-                      <p className="text-sm font-black text-slate-900">Google Verified</p>
+                      <p className="text-sm font-black text-slate-900">Verified Protocol</p>
                     </div>
                   </div>
                   <ExternalLink size={16} className="text-slate-300" />

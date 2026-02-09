@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, House, TrendingUp, Info, MapPin, Loader2, IndianRupee, Sparkles, BookOpen, LogOut, User, Settings, Fingerprint } from 'lucide-react';
 import { HouseQuery, PredictionResult, UserProfile } from './types';
 import { predictHousePrice } from './services/geminiService';
@@ -24,6 +24,36 @@ const App: React.FC = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
+  // Initialize Auth from LocalStorage or create Guest Profile
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('bharatprop_user');
+    if (savedProfile) {
+      try {
+        setUserProfile(JSON.parse(savedProfile));
+        setIsLoggedIn(true);
+      } catch (e) {
+        console.error("Failed to parse saved profile", e);
+        localStorage.removeItem('bharatprop_user');
+      }
+    } else {
+      // Create a default guest profile for new users to explore immediately
+      const defaultProfile: UserProfile = {
+        name: 'Guest Investor',
+        email: 'guest@bharatprop.ai',
+        phone: '+91 99999 00000',
+        location: 'Mumbai',
+        bio: 'Exploring institutional real estate analytics. New to BharatProp!',
+        joinedDate: new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+        avatarColor: 'bg-slate-700',
+        isEmailVerified: false,
+        isPhoneVerified: false
+      };
+      setUserProfile(defaultProfile);
+      setIsLoggedIn(true);
+      localStorage.setItem('bharatprop_user', JSON.stringify(defaultProfile));
+    }
+  }, []);
+
   const handlePredict = async (query: HouseQuery) => {
     setLoading(true);
     setError(null);
@@ -37,30 +67,35 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogin = (method: string) => {
-    setIsLoggedIn(true);
-    setUserProfile({
-      name: 'Verified Market Investor',
-      email: 'verified_user@bharatprop.ai',
-      phone: '+91 98XXX XXX45',
-      location: 'Mumbai',
-      bio: 'Institutional property scout using BharatProp AI for data-driven decisions.',
-      joinedDate: 'Feb 2025',
+  const handleLogin = (identifier: string) => {
+    const newProfile: UserProfile = {
+      name: identifier.includes('@') ? identifier.split('@')[0] : 'Investor ' + identifier.slice(-4),
+      email: identifier.includes('@') ? identifier : `${identifier}@bharatprop.ai`,
+      phone: identifier.includes('@') ? '+91 98XXX XXX45' : identifier,
+      location: userProfile?.location || 'Mumbai',
+      bio: userProfile?.bio || 'Institutional property scout using BharatProp AI for data-driven decisions.',
+      joinedDate: userProfile?.joinedDate || new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
       avatarColor: 'bg-blue-600',
       isEmailVerified: true,
       isPhoneVerified: true
-    });
+    };
+    
+    setIsLoggedIn(true);
+    setUserProfile(newProfile);
+    localStorage.setItem('bharatprop_user', JSON.stringify(newProfile));
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserProfile(null);
+    localStorage.removeItem('bharatprop_user');
     setShowProfile(false);
     setShowAuthModal(false);
   };
 
   const handleSaveProfile = (updated: UserProfile) => {
     setUserProfile(updated);
+    localStorage.setItem('bharatprop_user', JSON.stringify(updated));
     setShowProfile(false);
   };
 
@@ -140,7 +175,7 @@ const App: React.FC = () => {
       )}
       <nav className="bg-white/90 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-20 items-center">
-          <button onClick={() => setActiveView('predictor')} className="flex items-center gap-3">
+          <button onClick={() => { setActiveView('predictor'); setResult(null); window.scrollTo(0,0); }} className="flex items-center gap-3">
             <House className="text-blue-600" size={32} />
             <h1 className="text-3xl font-black tracking-tighter">Bharat<span className="text-blue-600">Prop</span></h1>
           </button>
